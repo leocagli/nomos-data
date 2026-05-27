@@ -1,101 +1,227 @@
-# Nomos
+# Nomos Data
 
-**Compute-routed marketplace for specialist teams.** Users primarily rent teams, not raw agents. Each team receives a goal, decomposes it into subtasks, classifies each one by complexity, routes it to the cheapest Claude model that can still do the work well, and assigns it to the right specialist. Live savings vs a naive all-Opus baseline are the product proof.
+Nomos Data is a web3-native execution ledger for AI teams built on Arkiv.
 
-> Nomos (νόμος) — Greek for *law, custom, order*. The law of compute routing.
+Instead of leaving agent runs trapped inside app logs, Nomos stores each run as a queryable execution graph on Arkiv Braga. Every run becomes linked records for the job itself, the subtasks it was broken into, the routing decisions behind model selection, and the execution receipts that prove what happened.
 
-Individual agents still matter, but as supply. They are browsable, registerable from GitHub, and can be assembled into teams. The customer-facing workflow is team-first.
+## Links
 
-## The idea
+- Live demo: https://nomosdata.vercel.app
+- GitHub: https://github.com/leocagli/nomos-data
+- App README: [app/README.md](app/README.md)
 
-Most multi-agent systems overspend because they default to one strong model for everything. Nomos flips this:
+## Demo Preview
 
-1. A user rents a squad with a shared specialty.
-2. The user hands the squad a goal.
-3. The orchestrator decomposes it into 3 to 5 subtasks, each tagged with a `skill_hint`.
-4. The classifier labels each subtask as `simple`, `moderate`, or `complex`, using the `skill_hint` as a strong prior.
-5. The router maps that tier to the cheapest model that can do the work well.
-6. A matching specialist inside the team or marketplace pool executes the task.
-7. The savings panel shows naive all-Opus spend vs routed actual spend.
+Live product flow, captured from the deployed app:
 
-The moat is not the marketplace alone. The moat is the router. The marketplace is distribution.
+![Nomos Data flow](docs/media/nomos-flow.gif)
 
-## Product model
+## Screenshots
 
-- Teams are the primary marketplace unit users rent.
-- Agents are the underlying specialists teams are built from.
-- Routing is the core product behavior that determines cost efficiency.
-- GitHub registration currently onboards agents, not whole teams.
+Homepage and marketplace surface:
 
-## Current implementation
+![Nomos Data homepage](docs/media/nomos-home.png)
 
-The repo contains a working Next.js MVP under `app/`. Everything canonical is there.
+Arkiv-native orchestration flow:
 
-Current implementation highlights:
+![Nomos Data orchestrate flow](docs/media/nomos-orchestrate.png)
 
-- Team-first marketplace homepage with 7 verticals (legal, content, marketing, research, localization, support, ops)
-- Individual agent pool as secondary inventory (15 agents across simple/moderate/complex tiers)
-- Squad detail pages with subscription tier picker and quote flow
-- Orchestration dashboard with SSE event streaming and live model badges
-- Buyer onboarding flow and inbox for quote management
-- Asset manager (images, fonts, colors, documents) backed by Vercel Blob
-- MetaMask wallet integration for ETH-denominated task pricing
-- Classifier, router, executor, pricing, and in-memory store in `app/src/lib`
-- GitHub-based agent registration
-- Vitest suite covering pricing, routing, and GitHub registration helpers
+Team detail and team-first execution entry:
 
-## Stack
+![Nomos Data team page](docs/media/nomos-team-content-engine.png)
+
+Suggested click path for the live demo:
+
+- Landing page: https://nomosdata.vercel.app
+- Team page: https://nomosdata.vercel.app/teams/content-engine
+- Orchestrate flow: https://nomosdata.vercel.app/orchestrate
+
+The strongest walkthrough is homepage -> team page -> orchestrate -> Arkiv receipt/query proof.
+
+## What Nomos Data Does
+
+Nomos takes one goal and turns it into durable execution history.
+
+The flow is:
+
+1. A user submits a goal from the frontend.
+2. Nomos decomposes that goal into subtasks.
+3. Each subtask is classified by complexity.
+4. The router assigns the cheapest model that can still do the work well.
+5. Specialists execute the tasks.
+6. The run is persisted to Arkiv as related entities with live query surfaces and explorer links.
+
+This makes AI orchestration inspectable after the run ends, not just while it is streaming.
+
+## Why Arkiv Matters Here
+
+Nomos is not using Arkiv as a blob store.
+
+It uses Arkiv as the primary proof layer for execution history:
+
+- Separate entity types: `job`, `subtask`, `routing_decision`, `execution_receipt`
+- Queryable attributes: `project`, `runId`, `entityType`, `requesterWallet`, `tier`, `model`, `subtaskId`
+- Entity relationships: job -> subtasks -> routing decisions -> execution receipts
+- Wallet-linked attribution: requester wallet is tagged on the run, while Arkiv preserves immutable creator attribution for the backend publisher
+- Differentiated expiration: entity types use different lifetimes based on how long they should remain useful
+
+That gives Nomos a deeper Arkiv integration than simply storing one JSON payload per run.
+
+## Arkiv Integration Approach
+
+Nomos is designed to score well on Arkiv integration depth by making the ledger structure first-class instead of treating Arkiv as storage behind the scenes.
+
+The implementation approach is:
+
+1. Use Arkiv as the primary persistence layer for execution history, not as a backup export.
+2. Split one run into multiple related entity types instead of a single blob.
+3. Keep important fields queryable so a run can be filtered by wallet, tier, model, run id, or entity type.
+4. Preserve entity relationships so the run can be reconstructed as a graph.
+5. Set differentiated expirations based on the usefulness of each record type.
+6. Hide blockchain complexity from the user by signing and publishing server-side after the frontend only initiates the action.
+
+Current entity model:
+
+| Entity | Purpose | Key queryable fields | Relationship |
+| --- | --- | --- | --- |
+| `job` | Root record for a run | `project`, `runId`, `requesterWallet` | Parent of all run entities |
+| `subtask` | One decomposed task | `project`, `runId`, `subtaskId`, `tier` | Child of `job` |
+| `routing_decision` | Why a model was selected | `project`, `runId`, `subtaskId`, `model`, `tier` | Child of `job` and `subtask` |
+| `execution_receipt` | Output and execution proof | `project`, `runId`, `subtaskId`, `model` | Child of `job`, `subtask`, and `routing_decision` |
+
+This is the core product claim: a user can come back later and query not just that a run existed, but how it was routed and what each step produced.
+
+## Product Value
+
+Nomos is built around three ideas:
+
+- Cost-aware routing: not every task needs the most expensive model
+- User-owned execution history: runs remain queryable after they finish
+- Proof over opacity: the user can inspect explorer links, transaction hashes, and filtered Arkiv queries
+
+In practice, that means Nomos helps teams reduce spend while also making AI work easier to audit, explain, and trust.
+
+## Challenge Fit
+
+Nomos is built to match the parts of the Arkiv challenge that matter most:
+
+- Real Arkiv usage, not a mock storage layer: the core execution history is modeled as Arkiv entities
+- Working product flow: the live deployment lets a user browse, start a run, and inspect the resulting ledger story
+- Blockchain abstraction: the frontend only starts the action; the server signs and publishes the Arkiv writes
+- Open proof surface: explorer links, query URLs, and transaction-backed entities are exposed in the product itself
+- Documentation quality: the repo README gives the overview, while [app/README.md](app/README.md) contains deeper proof-of-flow and deployment notes
+
+This is the shape of a reference-style submission: a product someone can open, use, inspect, and verify.
+
+## Current Demo State
+
+The deployed product is currently validated in a safe demo configuration:
+
+- Execution layer: controlled mock mode for deterministic runs
+- Arkiv persistence: real
+- Deployment: live on Vercel
+- Ledger status: verified end-to-end with hosted runs reaching `stored`
+
+This means the run outputs are demo-safe, but the Arkiv receipts, entity links, transaction hashes, and query URLs are real.
+
+## Core Screens
+
+- Homepage: marketplace positioning, recent runs, recent Arkiv jobs
+- Orchestrate: goal input, decomposition, routing, execution, savings, and ledger state
+- Arkiv receipt panel: requester, creator, stored entities, explorer links, and live data.arkiv queries
+
+## Tech Stack
 
 | Layer | Tech |
 | --- | --- |
-| Frontend | Next.js 16, React 19, TypeScript, Tailwind v4, Framer Motion |
-| Backend | Next.js API routes, GitHub REST API, in-memory store, Vercel Blob |
-| AI | `@anthropic-ai/sdk` — Haiku for classification, Sonnet for orchestration and moderate work, Opus for complex work |
-| Wallet | MetaMask (`@metamask/connect-evm`), ETH-denominated pricing |
-| Live UI | SSE streaming from `/api/orchestrate` |
-| Registration | GitHub REST API reading `skills.md`, `memory/metrics.json`, and 90d commits |
+| Frontend | Next.js 16, React 19, TypeScript |
+| Backend | Next.js route handlers, SSE streaming |
+| Data layer | Arkiv Braga via `@arkiv-network/sdk` |
+| Wallet | MetaMask integration + server-side Arkiv writer wallet |
+| Pricing | ETH-denominated cost model with USD-first display |
+| Persistence model | `job`, `subtask`, `routing_decision`, `execution_receipt` |
 
-## Repository layout
+## Repository Structure
 
 ```text
 nomos/
-├── app/                               # Next.js 16 product (canonical source of truth)
-│   ├── src/app/                       # Routes + API
-│   ├── src/components/                # UI components
-│   ├── src/lib/                       # classifier, router, orchestrator, executor, pricing, store
-│   ├── src/fixtures/                  # seeded agents + teams
-│   └── public/fonts/                  # Gordon Rounded typeface
-└── README.md                          # this file
+├── app/                 # canonical Next.js application
+│   ├── src/app/         # routes and APIs
+│   ├── src/components/  # product UI
+│   ├── src/lib/         # Arkiv, routing, pricing, execution, auth
+│   └── public/          # static assets
+└── README.md            # project overview
 ```
 
-## Run locally
+## Run Locally
 
 ```bash
 cd app
-pnpm install
-cp .env.local.example .env.local   # set ANTHROPIC_API_KEY
-pnpm dev
+npm install
+cp .env.local.example .env.local
+npm run dev
 ```
 
-Then open <http://localhost:3000>.
+Then open http://localhost:3000.
 
-## Deploy to Vercel
+For local Arkiv proof flows, configure at least:
 
-1. Import `MartinPuli/nomos` on <https://vercel.com/new>.
-2. Set **Root Directory** to `app`.
-3. Set `ANTHROPIC_API_KEY`.
-4. Optionally set `GITHUB_TOKEN`.
-5. Deploy.
+- `ARKIV_PRIVATE_KEY`
+- `NEXT_PUBLIC_ETH_PRICE_USD`
+- `MOCK_MODE=1` if you want deterministic demo execution
 
-## Demo goal that shows max model spread
+## Deploy
 
-> Launch a new SaaS product: design the pricing tier architecture, write the landing page headline and hero copy, and format a 5-question FAQ section from these raw notes.
+Production is live at https://nomosdata.vercel.app.
 
-This naturally splits into Opus for pricing strategy, Sonnet for landing copy, and Haiku for FAQ formatting — demonstrating the full model spread in one run.
+Minimum production env set:
 
-Recommended team: **Content Engine** (`content-engine`) or **Brand Marketing** (`brand-marketing`).
+- `ARKIV_PRIVATE_KEY`
+- `NEXT_PUBLIC_SITE_URL=https://nomosdata.vercel.app`
+- `NEXT_PUBLIC_ETH_PRICE_USD`
+- `ANTHROPIC_API_KEY` for live model execution, or `MOCK_MODE=1` for controlled demo mode
 
-## Demo-safety flags
+The deeper deployment notes, Arkiv query examples, and proof-of-flow details live in [app/README.md](app/README.md).
 
-- `MOCK_MODE=1` disables GitHub registration and keeps the experience fixtures-only.
-- `FORCE_ROUTING=pricing=complex,landing=moderate,faq=simple` pins classifier output by keyword if live classification drifts during a pitch.
+## Smoke Test
+
+You can validate the deployed app with:
+
+```bash
+cd app
+npm run smoke:deploy -- --url https://nomosdata.vercel.app
+```
+
+That checks:
+
+- hosted config exposure via `/api/supabase-check`
+- core API availability
+- one end-to-end orchestration run
+- Arkiv run query readback
+
+## Demo Path
+
+The strongest live demo path is:
+
+1. Open the homepage
+2. Click `Run a team`
+3. Use the launch preset
+4. Start the run
+5. Show decomposition, routing, and savings
+6. End on the Arkiv receipt panel and open the run query
+
+## Team
+
+- Builder: @leocagli
+
+## Submission Details
+
+| Field | Value |
+| --- | --- |
+| Builder | Leo Cagli (@leocagli) |
+| Public repo | https://github.com/leocagli/nomos-data |
+| Working demo | https://nomosdata.vercel.app |
+| Arkiv network | Braga testnet |
+| Demo writer wallet / submission wallet | `0x670E8E7b3545b4b0bDFF99A5DcdbAfB1bcFC700f` |
+
+If the submission form needs a separate prize wallet later, this section can be updated without changing the product setup.

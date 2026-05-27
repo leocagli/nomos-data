@@ -95,6 +95,8 @@ Open `http://localhost:3000`.
 
 The example env file now includes the minimum deploy-relevant variables. Keep `ARKIV_PRIVATE_KEY`, `ANTHROPIC_API_KEY`, and `GITHUB_TOKEN` server-only in Vercel.
 
+Current production URL: `https://nomosdata.vercel.app`.
+
 ## Deploying to Vercel
 
 Nomos should be deployed with Arkiv writes enabled from a server-side wallet, not from the browser and not from local-only state.
@@ -138,7 +140,7 @@ Use `preview` first to validate infrastructure, then promote the same shape to `
 Recommended policy:
 
 1. `preview`: use a funded Braga wallet, set `NEXT_PUBLIC_SITE_URL` to the preview URL, and allow `MOCK_MODE=1` for the cheapest end-to-end test.
-2. `production`: remove `MOCK_MODE`, require `ANTHROPIC_API_KEY`, and keep `ARKIV_PRIVATE_KEY` scoped to production unless preview writes are intentional.
+2. `production`: remove `MOCK_MODE`, require `ANTHROPIC_API_KEY`, keep `ARKIV_PRIVATE_KEY` scoped to production unless preview writes are intentional, and set `NEXT_PUBLIC_SITE_URL=https://nomosdata.vercel.app`.
 
 ### Vercel checklist
 
@@ -166,7 +168,7 @@ Run the hosted validation in this order:
 You can automate most of that sequence against a deployed URL with:
 
 ```bash
-npm run smoke:deploy -- --url https://your-deployment-url
+npm run smoke:deploy -- --url https://nomosdata.vercel.app
 ```
 
 Optional flags:
