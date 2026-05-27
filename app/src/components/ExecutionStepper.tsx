@@ -21,10 +21,12 @@ export function ExecutionStepper({
   subtasks,
   running,
   finished,
+  arkivPhase,
 }: {
   subtasks: SubTask[];
   running: boolean;
   finished: boolean;
+  arkivPhase: "idle" | "queued" | "writing" | "stored" | "partial" | "skipped" | "failed";
 }) {
   const counts = countByStatus(subtasks);
   const total = subtasks.length;
@@ -32,6 +34,22 @@ export function ExecutionStepper({
   const classified = counts.routed + counts.working + counts.done + counts.error;
   const assigned = subtasks.filter((subtask) => subtask.agent_id).length;
   const completed = counts.done + counts.error;
+  const ledgerStarted = arkivPhase === "writing" || arkivPhase === "stored" || arkivPhase === "partial" || arkivPhase === "skipped" || arkivPhase === "failed";
+  const ledgerDone = arkivPhase === "stored" || arkivPhase === "partial" || arkivPhase === "skipped" || arkivPhase === "failed";
+  const ledgerDetail =
+    arkivPhase === "writing"
+      ? "Submitting the execution graph to Arkiv"
+      : arkivPhase === "stored"
+        ? "Ledger stored and queryable"
+        : arkivPhase === "partial"
+          ? "Some Arkiv entities were created before a later transaction failed"
+        : arkivPhase === "skipped"
+          ? "Arkiv write skipped until server wallet is configured"
+          : arkivPhase === "failed"
+            ? "Ledger write failed after execution"
+            : finished
+              ? "Waiting to persist receipts"
+              : "Runs are signed server-side when execution finishes";
 
   const stages = [
     {
@@ -54,6 +72,17 @@ export function ExecutionStepper({
       detail: hasTasks ? `${completed}/${total} tasks completed` : "Outputs will stream here",
       state: !hasTasks ? "upcoming" : finished ? "done" : counts.working > 0 || completed > 0 ? "current" : "upcoming",
     },
+    {
+      label: "Ledger",
+      detail: ledgerDetail,
+      state: !hasTasks
+        ? "upcoming"
+        : ledgerDone
+          ? "done"
+          : ledgerStarted || finished
+            ? "current"
+            : "upcoming",
+    },
   ] as const;
 
   return (
@@ -64,7 +93,7 @@ export function ExecutionStepper({
             Execution path
           </div>
           <div style={{ fontSize: "0.875rem", color: "var(--text-dim)", marginTop: "4px" }}>
-            Make the routing story visible: decomposition, classification, assignment, then execution.
+            Make the routing story visible: decomposition, classification, assignment, execution, then Arkiv persistence.
           </div>
         </div>
         {hasTasks && (
@@ -74,7 +103,7 @@ export function ExecutionStepper({
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
         {stages.map((stage, index) => {
           const active = stage.state === "current";
           const done = stage.state === "done";

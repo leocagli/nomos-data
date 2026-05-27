@@ -6,17 +6,20 @@ import { DirectoryTabs } from "@/components/DirectoryTabs";
 import { GnomeHat, GnomePeek } from "@/components/GnomeArt";
 import { TeamNavigator } from "@/components/TeamNavigator";
 import { RecentRunsPanel } from "@/components/RecentRunsPanel";
+import { ArkivJobsPanel } from "@/components/ArkivJobsPanel";
+import { fetchRecentArkivJobs } from "@/lib/arkiv";
 import { ensureSeeded } from "@/lib/seed";
 import { listTeams } from "@/lib/teams";
 import { listAgents, listRuns } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
-export default function MarketplacePage() {
+export default async function MarketplacePage() {
   ensureSeeded();
   const teams = listTeams();
   const agents = listAgents();
   const runs = listRuns();
+  const arkivJobs = await fetchRecentArkivJobs();
   const totalTasks = teams.reduce((sum, t) => sum + (t.tasks_completed ?? 0), 0);
   const avgSavings = teams.length
     ? Math.round(
@@ -217,7 +220,7 @@ export default function MarketplacePage() {
               animationDelay: "1080ms",
             }}
           >
-            hire your optimized ai workforce
+            queryable execution receipts for ai teams
           </p>
 
           {/* Subtitle */}
@@ -256,7 +259,7 @@ export default function MarketplacePage() {
               Run a team →
             </a>
             <a href="/register" className="btn-neo-ghost">
-              Register your agent
+              Browse specialists
             </a>
           </div>
 
@@ -311,6 +314,7 @@ export default function MarketplacePage() {
 
       {/* Recent runs panel */}
       <RecentRunsPanel runs={runs} />
+      <ArkivJobsPanel jobs={arkivJobs} />
     </div>
   );
 }

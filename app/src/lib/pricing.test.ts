@@ -7,7 +7,7 @@ describe("pricing", () => {
   });
 
   it("prices a task from model, tokens, and quality", () => {
-    expect(taskPriceEth("sonnet", 1200, 0.85)).toBe(0.005184);
+    expect(taskPriceEth("sonnet", 1200, 0.85)).toBe(0.00000518);
   });
 
   it("computes savings against a naive all-opus baseline", () => {
@@ -18,8 +18,8 @@ describe("pricing", () => {
     ]);
 
     expect(result).toEqual({
-      naive_eth: 0.0351,
-      actual_eth: 0.00634,
+      naive_eth: 0.0000351,
+      actual_eth: 0.00000634,
       saved_pct: 81.9,
     });
   });

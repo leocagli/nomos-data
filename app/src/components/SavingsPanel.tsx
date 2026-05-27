@@ -75,7 +75,7 @@ export function SavingsPanel({
               cheaper than Opus-for-everything
             </div>
             <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "3px", fontFamily: "JetBrains Mono, monospace" }}>
-              saved {ethToUsdc(savedEth)} USDC
+              saved {ethToUsdc(savedEth)} USD
             </div>
           </div>
 
@@ -111,7 +111,7 @@ export function SavingsPanel({
                 <span style={{ fontSize: "0.75rem", color: "var(--text-dim)" }}>Naive — all Opus</span>
               </div>
               <div style={{ textAlign: "right" }}>
-                <span style={{ fontSize: "0.75rem", fontFamily: "JetBrains Mono, monospace", color: "var(--text-dim)" }}>{ethToUsdc(naive)} USDC</span>
+                <span style={{ fontSize: "0.75rem", fontFamily: "JetBrains Mono, monospace", color: "var(--text-dim)" }}>{ethToUsdc(naive)} USD</span>
               </div>
             </div>
             <div style={{ height: "6px", background: "var(--bg-elev2)", borderRadius: "3px" }}>
@@ -127,7 +127,7 @@ export function SavingsPanel({
                 <span style={{ fontSize: "0.75rem", color: "var(--text-dim)" }}>Routed — Nomos</span>
               </div>
               <div style={{ textAlign: "right" }}>
-                <span style={{ fontSize: "0.75rem", fontFamily: "JetBrains Mono, monospace", color: "var(--savings)", fontWeight: 700 }}>{ethToUsdc(actual)} USDC</span>
+                <span style={{ fontSize: "0.75rem", fontFamily: "JetBrains Mono, monospace", color: "var(--savings)", fontWeight: 700 }}>{ethToUsdc(actual)} USD</span>
               </div>
             </div>
             <div style={{ height: "6px", background: "var(--bg-elev2)", borderRadius: "3px", overflow: "hidden" }}>

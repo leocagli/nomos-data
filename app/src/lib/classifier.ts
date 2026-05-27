@@ -9,8 +9,9 @@
  */
 import Anthropic from "@anthropic-ai/sdk";
 import { getAnthropic } from "./anthropic";
-import { CLASSIFIER_MODEL, parseForceRouting } from "./config";
+import { CLASSIFIER_MODEL, LLM_MOCK_MODE, parseForceRouting } from "./config";
 import { ApiError, requireTrimmedString } from "./http";
+import { mockClassify } from "./mock-llm";
 import type { Classification, Tier } from "./types";
 
 const SYSTEM_PROMPT = `You are a task complexity classifier. Given a subtask description and an optional skill_hint, output JSON only:
@@ -53,6 +54,9 @@ export async function classify(description: string, skillHint?: string): Promise
   const normalizedDescription = requireTrimmedString(description, "description", {
     maxLength: 2000,
   });
+  if (LLM_MOCK_MODE) {
+    return applyForceRouting(normalizedDescription, mockClassify(normalizedDescription, skillHint));
+  }
   const client = getAnthropic();
   const userContent = skillHint
     ? `skill_hint: ${skillHint}\nSubtask: ${normalizedDescription}`

@@ -196,7 +196,7 @@ export default async function AgentDetail({ params }: { params: Promise<{ id: st
                     Est. / task
                   </div>
                   <div style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "0.9375rem", fontWeight: 700, color: tc }}>
-                    {ethToUsdc(price)} USDC
+                    {ethToUsdc(price)} USD
                   </div>
                 </div>
               </div>

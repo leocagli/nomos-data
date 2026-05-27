@@ -21,7 +21,7 @@ describe("registerFromGithub", () => {
     } satisfies Partial<ApiError>);
   });
 
-  it("uses fallback skills and metrics when repo files are missing", async () => {
+  it("rejects when skills.md is missing", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn((input: string | URL | Request) => {
@@ -33,19 +33,12 @@ describe("registerFromGithub", () => {
       }),
     );
 
-    const agent = await registerFromGithub({ github_url: "https://github.com/acme/demo-agent" });
-
-    expect(agent.source).toBe("github");
-    expect(agent.skills).toEqual(["general"]);
-    expect(agent.metrics.avg_tokens_per_task).toEqual({
-      simple: 400,
-      moderate: 1200,
-      complex: 2800,
-    });
-    expect(agent.metrics.success_rate).toBe(0.75);
+    await expect(registerFromGithub({ github_url: "https://github.com/acme/demo-agent" })).rejects.toMatchObject({
+      code: "manifest_missing_skills_md",
+    } satisfies Partial<ApiError>);
   });
 
-  it("falls back to default metrics when metrics.json is malformed", async () => {
+  it("rejects when metrics.json is malformed", async () => {
     const skillsMd = Buffer.from("- pricing\n- packaging strategy", "utf-8").toString("base64");
     const brokenMetrics = Buffer.from("{not-json}", "utf-8").toString("base64");
 
@@ -64,11 +57,9 @@ describe("registerFromGithub", () => {
       }),
     );
 
-    const agent = await registerFromGithub({ github_url: "https://github.com/acme/pricing-bot" });
-
-    expect(agent.skills).toEqual(["pricing", "packaging_strategy"]);
-    expect(agent.metrics.success_rate).toBe(0.75);
-    expect(agent.commits_90d).toBe(3);
+    await expect(registerFromGithub({ github_url: "https://github.com/acme/pricing-bot" })).rejects.toMatchObject({
+      code: "manifest_invalid_json",
+    } satisfies Partial<ApiError>);
   });
 
   it("returns a friendly rate-limit error", async () => {

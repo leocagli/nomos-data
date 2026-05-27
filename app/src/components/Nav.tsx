@@ -46,6 +46,17 @@ export async function Nav() {
           >
             nomos
           </span>
+          <span
+            style={{
+              fontSize: "0.625rem",
+              textTransform: "uppercase",
+              letterSpacing: "0.18em",
+              color: "var(--text-muted)",
+              fontWeight: 600,
+            }}
+          >
+            arkiv ledger
+          </span>
         </Link>
 
         {/* Divider */}

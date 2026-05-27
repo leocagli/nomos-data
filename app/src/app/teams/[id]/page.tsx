@@ -80,7 +80,7 @@ export default async function TeamDetail({ params }: { params: Promise<{ id: str
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: "Avg savings",  value: `${team.avg_savings_pct.toFixed(1)}%`,               color: "var(--savings)" },
-          { label: "Rent / task",  value: `${ethToUsdc(team.rent_price_eth_per_task)} USDC`,    color: "var(--text)" },
+          { label: "Rent / task",  value: `${ethToUsdc(team.rent_price_eth_per_task)} USD`,     color: "var(--text)" },
           { label: "Avg tokens",   value: team.avg_tokens_per_task.toLocaleString(),           color: "var(--text)" },
           { label: "Tasks done",   value: team.tasks_completed.toLocaleString(),               color: "var(--text)" },
         ].map(({ label, value, color }) => (

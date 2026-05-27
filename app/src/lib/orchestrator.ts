@@ -9,7 +9,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { getAnthropic } from "./anthropic";
 import { ApiError, requireTrimmedString } from "./http";
-import { ORCHESTRATOR_MODEL } from "./config";
+import { LLM_MOCK_MODE, ORCHESTRATOR_MODEL } from "./config";
+import { mockDecompose } from "./mock-llm";
 
 interface DecomposedSubtask {
   description: string;
@@ -61,6 +62,9 @@ const TOOL = {
 
 export async function decompose(goal: string): Promise<DecomposedSubtask[]> {
   const normalizedGoal = requireTrimmedString(goal, "goal", { maxLength: 5000 });
+  if (LLM_MOCK_MODE) {
+    return mockDecompose(normalizedGoal);
+  }
   const client = getAnthropic();
   const res = await client.messages.create({
     model: ORCHESTRATOR_MODEL,

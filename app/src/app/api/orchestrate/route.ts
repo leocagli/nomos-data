@@ -8,6 +8,7 @@ import { runSubagent } from "@/lib/executor";
 import { computeSavings, taskPriceEth } from "@/lib/pricing";
 import { ApiError, jsonError, optionalTrimmedString, parseJsonBody, requireTrimmedString } from "@/lib/http";
 import type { OrchestrationEvent, OrchestrationRun, SubTask, Agent } from "@/lib/types";
+import { isArkivWriteEnabled, persistRunToArkiv } from "@/lib/arkiv";
 import { v4 as uuid } from "uuid";
 
 export const runtime = "nodejs";
@@ -22,12 +23,21 @@ export async function POST(req: Request) {
   let goal: string;
   let teamId: string | undefined;
   let teamName: string | undefined;
+  let requesterWallet: string | null = null;
   let agentPool: Agent[];
 
   try {
-    const body = await parseJsonBody<{ goal?: string; team_id?: string }>(req);
+    const body = await parseJsonBody<{
+      goal?: string;
+      team_id?: string;
+      requester_wallet?: string;
+    }>(req);
     goal = requireTrimmedString(body.goal, "goal", { maxLength: 5000 });
     teamId = optionalTrimmedString(body.team_id, "team_id", { maxLength: 200 });
+    requesterWallet =
+      optionalTrimmedString(body.requester_wallet, "requester_wallet", {
+        maxLength: 42,
+      }) ?? null;
 
     if (teamId) {
       const team = getTeam(teamId);
@@ -67,6 +77,7 @@ export async function POST(req: Request) {
           created_at: new Date().toISOString(),
           team_id: teamId,
           team_name: teamName,
+          requester_wallet: requesterWallet,
           subtasks: [],
           total_actual_eth: 0,
           total_naive_eth: 0,
@@ -153,6 +164,15 @@ export async function POST(req: Request) {
         run.total_naive_eth = totals.naive_eth;
         run.saved_pct = totals.saved_pct;
         run.status = "done";
+        if (isArkivWriteEnabled()) {
+          send({
+            type: "ledger_writing",
+            run_id: run.id,
+            destination: "arkiv",
+            mode: "server_wallet",
+          });
+        }
+        run.arkiv = await persistRunToArkiv(run);
         saveRun(run);
 
         send({
@@ -160,6 +180,7 @@ export async function POST(req: Request) {
           total_actual_eth: totals.actual_eth,
           total_naive_eth: totals.naive_eth,
           saved_pct: totals.saved_pct,
+          arkiv: run.arkiv,
         });
       } catch (e) {
         const message = e instanceof Error ? e.message : "orchestrate failed";

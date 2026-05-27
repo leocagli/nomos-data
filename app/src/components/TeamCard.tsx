@@ -109,7 +109,7 @@ export function TeamCard({ team }: { team: Team }) {
               {ethToUsdc(team.rent_price_eth_per_task)}
             </div>
             <div style={{ fontSize: "0.625rem", color: "var(--text-muted)", marginTop: "6px", textTransform: "uppercase", letterSpacing: "0.12em" }}>
-              USDC / task
+              USD / task
             </div>
           </div>
           <div style={{ textAlign: "center" }}>

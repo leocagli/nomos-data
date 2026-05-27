@@ -8,7 +8,8 @@
  */
 import Anthropic from "@anthropic-ai/sdk";
 import { getAnthropic } from "./anthropic";
-import { MODEL_IDS } from "./config";
+import { LLM_MOCK_MODE, MODEL_IDS } from "./config";
+import { mockRunSubagent } from "./mock-llm";
 import type { Agent, ModelId } from "./types";
 
 function buildSubagentSystem(agent: Agent, tier: string): string {
@@ -52,6 +53,9 @@ export async function runSubagent(
   tier: string,
   taskDescription: string,
 ): Promise<ExecutionResult> {
+  if (LLM_MOCK_MODE) {
+    return mockRunSubagent(agent, model, tier, taskDescription);
+  }
   const client = getAnthropic();
   const res = await client.messages.create({
     model: MODEL_IDS[model],

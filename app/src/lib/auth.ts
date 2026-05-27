@@ -1,4 +1,5 @@
 import { getSupabaseServer } from "./supabase/server";
+import { isSupabaseConfigured } from "./supabase/config";
 
 export type AuthUser = {
   id: string;
@@ -10,6 +11,9 @@ export type AuthUser = {
 };
 
 export async function getCurrentUser(): Promise<AuthUser | null> {
+  if (!isSupabaseConfigured()) {
+    return null;
+  }
   const supabase = await getSupabaseServer();
   const {
     data: { user },

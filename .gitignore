@@ -7,9 +7,13 @@ app/.next/
 app/out/
 app/.vercel/
 app/.env*.local
+app/.tmp-orchestrate.json
+app/devserver*.log
 
 # top-level noise
 node_modules/
 .vercel/
 .DS_Store
 .claude/
+.vercel
+.env*

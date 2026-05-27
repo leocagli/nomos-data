@@ -7,10 +7,12 @@
     "build": "next build",
     "start": "next start",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "smoke:deploy": "node ./scripts/smoke-deploy.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.88.0",
+    "@arkiv-network/sdk": "^0.6.8",
     "@metamask/connect-evm": "^0.9.1",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.104.1",

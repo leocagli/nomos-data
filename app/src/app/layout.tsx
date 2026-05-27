@@ -6,19 +6,20 @@ const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://nomos.vercel.app";
 const SITE_NAME = "Nomos";
 const SITE_DESCRIPTION =
-  "Rent pre-assembled agent teams. Every subtask runs on the cheapest Claude model that can still do it well — Haiku, Sonnet or Opus.";
+  "Queryable execution history for AI teams on Arkiv Braga. Every routed subtask leaves a verifiable receipt instead of disappearing into platform logs.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} — Compute-routed marketplace for AI agent teams`,
+    default: `${SITE_NAME} - Queryable execution ledger for AI teams`,
     template: `%s · ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
   keywords: [
     "AI agents",
-    "agent marketplace",
+    "Arkiv",
+    "execution ledger",
     "Claude",
     "Anthropic",
     "multi-agent",
@@ -36,13 +37,13 @@ export const metadata: Metadata = {
     type: "website",
     url: "/",
     siteName: SITE_NAME,
-    title: `${SITE_NAME} — Compute-routed marketplace for AI agent teams`,
+    title: `${SITE_NAME} - Queryable execution ledger for AI teams`,
     description: SITE_DESCRIPTION,
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_NAME} — Compute-routed marketplace for AI agent teams`,
+    title: `${SITE_NAME} - Queryable execution ledger for AI teams`,
     description: SITE_DESCRIPTION,
   },
   robots: {
@@ -61,31 +62,47 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
       <body>
         <Nav />
         <main className="max-w-6xl mx-auto px-6 py-10">{children}</main>
-        <footer style={{ borderTop: "1px solid var(--border)", marginTop: "80px" }}>
+        <footer
+          style={{ borderTop: "1px solid var(--border)", marginTop: "80px" }}
+        >
           <div className="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between gap-4 flex-wrap">
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <span className="font-display" style={{ fontSize: "1rem", color: "var(--text-dim)" }}>nomos</span>
-              <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>© 2026</span>
+              <span
+                className="font-display"
+                style={{ fontSize: "1rem", color: "var(--text-dim)" }}
+              >
+                nomos
+              </span>
+              <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
+                © 2026
+              </span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
               <span
                 style={{
-                  fontSize: "0.6875rem", color: "var(--text-muted)",
+                  fontSize: "0.6875rem",
+                  color: "var(--text-muted)",
                   fontFamily: "JetBrains Mono, monospace",
-                  background: "var(--bg-elev2)", border: "1px solid var(--border)",
-                  padding: "3px 10px", borderRadius: "6px",
+                  background: "var(--bg-elev2)",
+                  border: "1px solid var(--border)",
+                  padding: "3px 10px",
+                  borderRadius: "6px",
                 }}
               >
-                Sepolia testnet
+                Braga testnet
               </span>
               <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                Haiku · Sonnet · Opus
+                Arkiv receipts · Haiku · Sonnet · Opus
               </span>
             </div>
           </div>

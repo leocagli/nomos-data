@@ -10,6 +10,11 @@
  */
 export type Tier = "simple" | "moderate" | "complex";
 export type ModelId = "haiku" | "sonnet" | "opus";
+export type ArkivEntityType =
+  | "job"
+  | "subtask"
+  | "routing_decision"
+  | "execution_receipt";
 
 export interface AgentMetrics {
   avg_tokens_per_task: Partial<Record<Tier, number>>;
@@ -71,6 +76,60 @@ export interface SubTask {
   output?: string;
   classification?: Classification;
   error?: string;
+  arkiv?: {
+    subtaskEntityKey?: string;
+    routingDecisionKey?: string;
+    executionReceiptKey?: string;
+  };
+}
+
+export interface ArkivEntityRef {
+  entityType: ArkivEntityType;
+  entityKey: string;
+  txHash?: string;
+  explorerUrl: string;
+}
+
+export interface ArkivRunReceipt {
+  status: "pending" | "stored" | "partial" | "skipped" | "failed";
+  runId?: string;
+  creatorAddress?: string;
+  requesterWallet?: string | null;
+  queryUrl?: string;
+  reason?: string;
+  job?: ArkivEntityRef;
+  subtasks: ArkivEntityRef[];
+  routingDecisions: ArkivEntityRef[];
+  executionReceipts: ArkivEntityRef[];
+}
+
+export interface ArkivQueryLink {
+  label: string;
+  description: string;
+  filter: string;
+  url: string;
+}
+
+export interface ArkivQueriedEntity {
+  entityKey: string;
+  entityType: ArkivEntityType;
+  creator: string | null;
+  explorerUrl: string;
+  subtaskId?: string;
+  agentId?: string | null;
+  model?: ModelId;
+  tier?: Tier;
+  status?: string;
+  actualTokens?: number;
+  costEth?: number;
+  outputPreview?: string | null;
+}
+
+export interface ArkivRunQueryData {
+  runId: string;
+  queries: ArkivQueryLink[];
+  routingDecisions: ArkivQueriedEntity[];
+  executionReceipts: ArkivQueriedEntity[];
 }
 
 export interface OrchestrationRun {
@@ -79,11 +138,13 @@ export interface OrchestrationRun {
   created_at: string;
   team_id?: string;
   team_name?: string;
+  requester_wallet?: string | null;
   subtasks: SubTask[];
   total_actual_eth: number;
   total_naive_eth: number;
   saved_pct: number;
   status: "decomposing" | "routing" | "executing" | "done" | "error";
+  arkiv?: ArkivRunReceipt;
 }
 
 export type OrchestrationEvent =
@@ -94,7 +155,14 @@ export type OrchestrationEvent =
   | { type: "task_started"; subtask_id: string }
   | { type: "task_completed"; subtask_id: string; actual_tokens: number; cost_eth: number; output: string }
   | { type: "task_failed"; subtask_id: string; error: string }
-  | { type: "run_completed"; total_actual_eth: number; total_naive_eth: number; saved_pct: number }
+  | { type: "ledger_writing"; run_id: string; destination: "arkiv"; mode: "server_wallet" }
+  | {
+      type: "run_completed";
+      total_actual_eth: number;
+      total_naive_eth: number;
+      saved_pct: number;
+      arkiv?: ArkivRunReceipt;
+    }
   | { type: "error"; message: string };
 
 export interface Team {

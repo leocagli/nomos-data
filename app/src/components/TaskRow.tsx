@@ -84,7 +84,7 @@ export function TaskRow({ task, agent }: { task: SubTask; agent?: Agent }) {
             <span style={{ fontFamily: "monospace", color: "var(--text)" }}>{task.actual_tokens.toLocaleString()}</span> tokens
           </span>
           <span style={{ color: "var(--text-dim)" }}>
-            <span style={{ fontFamily: "monospace", color: "var(--tier-haiku)", fontWeight: 600 }}>{ethToUsdc(task.cost_eth)}</span> USDC
+            <span style={{ fontFamily: "monospace", color: "var(--tier-haiku)", fontWeight: 600 }}>{ethToUsdc(task.cost_eth)}</span> USD
           </span>
         </div>
       )}

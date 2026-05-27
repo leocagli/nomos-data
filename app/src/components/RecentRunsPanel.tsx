@@ -20,7 +20,7 @@ export function RecentRunsPanel({ runs }: { runs: OrchestrationRun[] }) {
             Recent runs
           </h2>
           <p style={{ fontSize: "0.8125rem", color: "var(--text-muted)", lineHeight: 1.55, margin: "6px 0 0" }}>
-            A lightweight activity feed so the marketplace feels alive and the routing story has receipts.
+            A lightweight activity feed showing whether each routed run produced Arkiv-backed receipts.
           </p>
         </div>
         <Link href="/orchestrate" style={{ fontSize: "0.75rem", color: "var(--accent)", textDecoration: "none" }}>
@@ -30,7 +30,7 @@ export function RecentRunsPanel({ runs }: { runs: OrchestrationRun[] }) {
 
       {runs.length === 0 ? (
         <div className="card" style={{ padding: "20px", color: "var(--text-dim)", fontSize: "0.875rem" }}>
-          No runs yet in this server session. Launch a team and Nomos will start recording recent activity here.
+          No runs yet in this server session. Launch a run and Nomos will start recording Arkiv-linked activity here.
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -43,7 +43,7 @@ export function RecentRunsPanel({ runs }: { runs: OrchestrationRun[] }) {
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px" }}>
                   <div>
                     <div style={{ fontSize: "0.6875rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--accent)" }}>
-                      {run.team_name ?? "Marketplace run"}
+                      {run.team_name ?? "Open pool run"}
                     </div>
                     <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px", fontFamily: "monospace" }}>
                       {relativeTime(run.created_at)}
@@ -84,7 +84,11 @@ export function RecentRunsPanel({ runs }: { runs: OrchestrationRun[] }) {
 
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
                   <div style={{ fontSize: "0.75rem", color: errorCount > 0 ? "#DC2626" : "var(--text-muted)" }}>
-                    {errorCount > 0 ? `${errorCount} task${errorCount !== 1 ? "s" : ""} failed` : "All streamed tasks completed cleanly"}
+                    {errorCount > 0
+                      ? `${errorCount} task${errorCount !== 1 ? "s" : ""} failed`
+                      : run.arkiv?.status === "stored"
+                        ? "All tasks completed and Arkiv receipts were stored"
+                        : "All streamed tasks completed cleanly"}
                   </div>
                   <Link
                     href={run.team_id ? `/orchestrate?team=${run.team_id}` : "/orchestrate"}
